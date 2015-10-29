@@ -151,6 +151,31 @@ public class HTableMultiCluster implements HTableInterface {
     return new Tuple<Boolean[]>(result.isPrimary, doesExists);
   }
 
+  public boolean[] existsAll(final List<Get> gets) throws IOException {
+    return multiClusterExistsAll(gets).getOriginalReturn();
+  }
+
+  public Tuple<boolean[]> multiClusterExistsAll(final List<Get> gets) throws IOException {
+    long startTime = System.currentTimeMillis();
+
+    HBaseTableFunction<boolean[]> function = new HBaseTableFunction<boolean[]>() {
+      @Override
+      public boolean[] call(HTableInterface table) throws Exception {
+        return table.existsAll(gets);
+      }
+    };
+
+    SpeculativeRequester.ResultWrapper<boolean[]> result = (new SpeculativeRequester<boolean[]>(
+            waitTimeBeforeRequestingFailover, waitTimeBeforeAcceptingResults, lastPrimaryFail,
+            waitTimeFromLastPrimaryFail)).
+            request(function, primaryHTable, failoverHTables);
+
+    stats.addGetList(result.isPrimary, System.currentTimeMillis() - startTime);
+
+    boolean[] doesExists = result.t;
+
+    return new Tuple<boolean[]>(result.isPrimary, doesExists);
+  }
   public void batch(final List<? extends Row> actions, final Object[] results)
           throws IOException, InterruptedException {
     // TODO
@@ -462,6 +487,11 @@ public class HTableMultiCluster implements HTableInterface {
     return primaryHTable.checkAndPut(row, family, qualifier, value, put);
   }
 
+  public boolean checkAndPut(byte[] row, byte[] family, byte[] qualifier,
+                             CompareFilter.CompareOp compareOp, byte[] value, Put put) throws IOException {
+    return primaryHTable.checkAndPut(row, family, qualifier, compareOp, value, put);
+  }
+
   public void delete(final Delete delete) throws IOException {
     multiClusterDelete(delete);
   }
@@ -515,6 +545,11 @@ public class HTableMultiCluster implements HTableInterface {
   public boolean checkAndDelete(byte[] row, byte[] family, byte[] qualifier,
                                 byte[] value, Delete delete) throws IOException {
     return primaryHTable.checkAndDelete(row, family, qualifier, value, delete);
+  }
+
+  public boolean checkAndDelete(byte[] row, byte[] family, byte[] qualifier,
+                                CompareFilter.CompareOp compareOp, byte[] value, Delete delete) throws IOException {
+    return primaryHTable.checkAndDelete(row, family, qualifier, compareOp, value, delete);
   }
 
   public void mutateRow(final RowMutations rm) throws IOException {

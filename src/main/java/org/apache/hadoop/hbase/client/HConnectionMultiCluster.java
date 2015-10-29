@@ -183,6 +183,21 @@ public class HConnectionMultiCluster implements HConnection {
             waitTimeFromLastPrimaryFail);
   }
 
+  public BufferedMutator getBufferedMutator(TableName tableName)
+          throws IOException {
+    return this.getBufferedMutator(tableName);
+  }
+
+  public BufferedMutator getBufferedMutator(BufferedMutatorParams params)
+          throws IOException {
+    return this.getBufferedMutator(params);
+  }
+
+  public RegionLocator getRegionLocator(TableName tableName)
+          throws IOException {
+    return this.getRegionLocator(tableName);
+  }
+
   public boolean isMasterRunning() throws MasterNotRunningException,
           ZooKeeperConnectionException {
     return primaryConnection.isMasterRunning();
@@ -301,6 +316,11 @@ public class HConnectionMultiCluster implements HConnection {
     primaryConnection.updateCachedLocations(tableName, rowkey, exception, source);
   }
 
+  public void updateCachedLocations(TableName tableName, byte[] regionName, byte[] rowkey,
+                                    Object exception, ServerName source) {
+    primaryConnection.updateCachedLocations(tableName, regionName, rowkey, exception, source);
+  }
+
   @Deprecated
   public
   void updateCachedLocations(byte[] tableName, byte[] rowkey, Object exception,
@@ -338,6 +358,10 @@ public class HConnectionMultiCluster implements HConnection {
 
   public BlockingInterface getMaster() throws IOException {
     return primaryConnection.getMaster();
+  }
+
+  public Admin getAdmin() throws IOException {
+    return primaryConnection.getAdmin();
   }
 
   public org.apache.hadoop.hbase.protobuf.generated.AdminProtos.AdminService.BlockingInterface getAdmin(
