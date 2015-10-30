@@ -19,7 +19,6 @@ public class HBaseMultiClusterConfigUtil {
       System.out.println("HBaseMultiClusterUtil <command> <args ....>");
       System.out.println("HBaseMultiClusterUtil combineConfigs <primary conf 1> <failover name> <failover conf 1> <optional failover name N> <optional failover conf N>");
       System.out.println("HBaseMultiClusterUtil splitConfigs <configuration file>");
-      System.out.println("HBaseMultiClusterUtil combinConfigsFromCM <host1> <user1> <pwd1> <cluster1> <hbaseName1> <host2> <user2> <pwd2> <cluster2> <hbaseName2> <outputFile>");
       return;
     }
     System.out.println("Command: " + args[0]);
@@ -28,7 +27,7 @@ public class HBaseMultiClusterConfigUtil {
       
       Configuration primaryConfig = generateCombinedConfig(args);
       
-      LOG.info("Writting Out New Primary");
+      LOG.info("Writing Out New Primary");
       primaryConfig.writeXml(new BufferedWriter(new FileWriter(new File(outputFile))));
       LOG.info(" - Successful Written Out New Primary");
     } else if (args[0].equals("splitConfigs")) {
@@ -65,7 +64,7 @@ public class HBaseMultiClusterConfigUtil {
       
       // add failover configs
       for (String failoverName: failoverNames) {
-        System.out.println("spliting: " + failoverName);
+        System.out.println("splitting: " + failoverName);
         Configuration failoverConfig = new Configuration(config);
         
         results.put(failoverName, failoverConfig);

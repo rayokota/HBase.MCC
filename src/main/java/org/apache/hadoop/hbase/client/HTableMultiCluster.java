@@ -364,12 +364,12 @@ public class HTableMultiCluster implements HTableInterface {
 
   public Boolean multiClusterPut(final Put put) throws IOException {
     if (autoFlush) {
-      return autoFlushMutliClusterPut(put);
+      return autoFlushMultiClusterPut(put);
     } else {
       bufferPutList.add(put);
       currentWriteBufferSize += put.heapSize();
       if (currentWriteBufferSize > writeBufferSize) {
-        Boolean isPrimary = autoFlushMutliClusterPut(bufferPutList);
+        Boolean isPrimary = autoFlushMultiClusterPut(bufferPutList);
         bufferPutList.clear();
         currentWriteBufferSize = 0l;
         return isPrimary;
@@ -378,7 +378,7 @@ public class HTableMultiCluster implements HTableInterface {
     }
   }
 
-  private Boolean autoFlushMutliClusterPut(final Put put) throws IOException {
+  private Boolean autoFlushMultiClusterPut(final Put put) throws IOException {
     long ts = System.currentTimeMillis();
 
     final Put newPut = setTimeStampOfUnsetValues(put, ts);
@@ -438,7 +438,7 @@ public class HTableMultiCluster implements HTableInterface {
 
   public Boolean multiClustPut(final List<Put> puts) throws IOException {
     if (autoFlush) {
-      return autoFlushMutliClusterPut(puts);
+      return autoFlushMultiClusterPut(puts);
     } else {
       bufferPutList.addAll(puts);
       for (int i = 0; i < puts.size(); i++) {
@@ -446,7 +446,7 @@ public class HTableMultiCluster implements HTableInterface {
       }
 
       if (currentWriteBufferSize > writeBufferSize) {
-        Boolean isPrimary = autoFlushMutliClusterPut(bufferPutList);
+        Boolean isPrimary = autoFlushMultiClusterPut(bufferPutList);
         bufferPutList.clear();
         currentWriteBufferSize = 0l;
         return isPrimary;
@@ -455,7 +455,7 @@ public class HTableMultiCluster implements HTableInterface {
     }
   }
 
-  public Boolean autoFlushMutliClusterPut(final List<Put> puts) throws IOException {
+  public Boolean autoFlushMultiClusterPut(final List<Put> puts) throws IOException {
     long ts = System.currentTimeMillis();
 
     final List<Put> newPuts = new ArrayList<Put>();
@@ -592,7 +592,7 @@ public class HTableMultiCluster implements HTableInterface {
 
   public void flushCommits() throws IOException {
     if (bufferPutList.size() > 0) {
-      autoFlushMutliClusterPut(bufferPutList);
+      autoFlushMultiClusterPut(bufferPutList);
       bufferPutList.clear();
       currentWriteBufferSize = 0l;
     }
@@ -601,7 +601,7 @@ public class HTableMultiCluster implements HTableInterface {
 
   public void close() throws IOException {
     if (bufferPutList.size() > 0) {
-      autoFlushMutliClusterPut(bufferPutList);
+      autoFlushMultiClusterPut(bufferPutList);
       bufferPutList.clear();
       currentWriteBufferSize = 0l;
     }
@@ -654,7 +654,7 @@ public class HTableMultiCluster implements HTableInterface {
     this.autoFlush = autoFlush;
     if (autoFlush == true && bufferPutList.size() > 0) {
       try {
-        autoFlushMutliClusterPut(bufferPutList);
+        autoFlushMultiClusterPut(bufferPutList);
         bufferPutList.clear();
         currentWriteBufferSize = 0l;
       } catch (IOException e) {

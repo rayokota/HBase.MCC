@@ -2,12 +2,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.cloudera.sa</groupId>
-	<artifactId>hbase.multicluster</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<groupId>org.apache.hbase</groupId>
+	<artifactId>hbase-multicluster-client</artifactId>
+	<version>0.0.1</version>
 	<packaging>jar</packaging>
 
-	<name>hbase.multicluster</name>
+	<name>hbase-multicluster-client</name>
 	<url>http://maven.apache.org</url>
 
 	<properties>
@@ -96,6 +96,7 @@
 			<type>test-jar</type>
 		</dependency>
 	</dependencies>
+	<!--
 	<build>
         <plugins>
         <plugin>
@@ -119,4 +120,5 @@
         </plugin>
         </plugins>
 	</build>
+	-->
 </project>
