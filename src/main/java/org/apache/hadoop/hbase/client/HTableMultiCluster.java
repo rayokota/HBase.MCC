@@ -178,24 +178,22 @@ public class HTableMultiCluster implements HTableInterface {
   }
   public void batch(final List<? extends Row> actions, final Object[] results)
           throws IOException, InterruptedException {
-    // TODO
+    primaryHTable.batch(actions, results);
   }
 
   public Object[] batch(final List<? extends Row> actions) throws IOException,
           InterruptedException {
-    // TODO
-    return null;
+    return primaryHTable.batch(actions);
   }
 
   public <R> void batchCallback(List<? extends Row> actions, Object[] results,
                                 Callback<R> callback) throws IOException, InterruptedException {
-    // TODO
+    primaryHTable.batchCallback(actions, results, callback);
   }
 
   public <R> Object[] batchCallback(List<? extends Row> actions,
                                     Callback<R> callback) throws IOException, InterruptedException {
-    // TODO
-    return null;
+    return primaryHTable.batchCallback(actions, callback);
   }
 
   public Result get(final Get get) throws IOException {
@@ -355,12 +353,13 @@ public class HTableMultiCluster implements HTableInterface {
     return new Tuple(result.isPrimary, result.t);
   }
 
-
   public void put(final Put put) throws IOException {
-    multiClusterPut(put);
+    if (isMasterMaster) {
+      multiClusterPut(put);
+    } else {
+      primaryHTable.put(put);
+    }
   }
-
-
 
   public Boolean multiClusterPut(final Put put) throws IOException {
     if (autoFlush) {
@@ -433,7 +432,11 @@ public class HTableMultiCluster implements HTableInterface {
   }
 
   public void put(final List<Put> puts) throws IOException {
-    multiClustPut(puts);
+    if (isMasterMaster) {
+      multiClustPut(puts);
+    } else {
+      primaryHTable.put(puts);
+    }
   }
 
   public Boolean multiClustPut(final List<Put> puts) throws IOException {
@@ -493,7 +496,11 @@ public class HTableMultiCluster implements HTableInterface {
   }
 
   public void delete(final Delete delete) throws IOException {
-    multiClusterDelete(delete);
+    if (isMasterMaster) {
+      multiClusterDelete(delete);
+    } else {
+      primaryHTable.delete(delete);
+    }
   }
 
   public Boolean multiClusterDelete(final Delete delete) throws IOException {
@@ -518,7 +525,11 @@ public class HTableMultiCluster implements HTableInterface {
   }
 
   public void delete(final List<Delete> deletes) throws IOException {
-    multiClusterDelete(deletes);
+    if (isMasterMaster) {
+      multiClusterDelete(deletes);
+    } else {
+      primaryHTable.delete(deletes);
+    }
   }
 
   public Boolean multiClusterDelete(final List<Delete> deletes) throws IOException {
@@ -591,19 +602,24 @@ public class HTableMultiCluster implements HTableInterface {
   }
 
   public void flushCommits() throws IOException {
-    if (bufferPutList.size() > 0) {
-      autoFlushMultiClusterPut(bufferPutList);
-      bufferPutList.clear();
-      currentWriteBufferSize = 0l;
+    if (isMasterMaster) {
+      if (bufferPutList.size() > 0) {
+        autoFlushMultiClusterPut(bufferPutList);
+        bufferPutList.clear();
+        currentWriteBufferSize = 0l;
+      }
+    } else {
+      primaryHTable.flushCommits();
     }
-
   }
 
   public void close() throws IOException {
-    if (bufferPutList.size() > 0) {
-      autoFlushMultiClusterPut(bufferPutList);
-      bufferPutList.clear();
-      currentWriteBufferSize = 0l;
+    if (isMasterMaster) {
+      if (bufferPutList.size() > 0) {
+        autoFlushMultiClusterPut(bufferPutList);
+        bufferPutList.clear();
+        currentWriteBufferSize = 0l;
+      }
     }
 
     Exception lastException = null;
@@ -632,70 +648,67 @@ public class HTableMultiCluster implements HTableInterface {
   }
 
   public CoprocessorRpcChannel coprocessorService(byte[] row) {
-    // TODO Auto-generated method stub
-    return null;
+    return primaryHTable.coprocessorService(row);
   }
 
   public <T extends Service, R> Map<byte[], R> coprocessorService(
           Class<T> service, byte[] startKey, byte[] endKey, Call<T, R> callable)
           throws ServiceException, Throwable {
-    // TODO Auto-generated method stub
-    return null;
+    return primaryHTable.coprocessorService(service, startKey, endKey, callable);
   }
 
   public <T extends Service, R> void coprocessorService(Class<T> service,
-                                                        byte[] startKey, byte[] endKey,Call<T, R> callable, Callback<R> callback)
+                                                        byte[] startKey, byte[] endKey, Call<T, R> callable, Callback<R> callback)
           throws ServiceException, Throwable {
-    // TODO Auto-generated method stub
+    primaryHTable.coprocessorService(service, startKey, endKey, callable, callback);
   }
 
   @Deprecated
   public void setAutoFlush(boolean autoFlush) {
-    this.autoFlush = autoFlush;
-    if (autoFlush == true && bufferPutList.size() > 0) {
-      try {
-        autoFlushMultiClusterPut(bufferPutList);
-        bufferPutList.clear();
-        currentWriteBufferSize = 0l;
-      } catch (IOException e) {
-        throw new RuntimeException(e);
+    if (isMasterMaster) {
+      this.autoFlush = autoFlush;
+      if (autoFlush == true && bufferPutList.size() > 0) {
+        try {
+          autoFlushMultiClusterPut(bufferPutList);
+          bufferPutList.clear();
+          currentWriteBufferSize = 0l;
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
       }
+    } else {
+      primaryHTable.setAutoFlush(autoFlush);
     }
-
   }
 
   public void setAutoFlush(boolean autoFlush, boolean clearBufferOnFail) {
-    // TODO Auto-generated method stub
-
+    primaryHTable.setAutoFlush(autoFlush, clearBufferOnFail);
   }
 
   public void setAutoFlushTo(boolean autoFlush) {
-    // TODO Auto-generated method stub
-
+    primaryHTable.setAutoFlushTo(autoFlush);
   }
 
   public long getWriteBufferSize() {
-    // TODO Auto-generated method stub
-    return 0;
+    return primaryHTable.getWriteBufferSize();
   }
 
   public void setWriteBufferSize(long writeBufferSize) throws IOException {
-    // TODO Auto-generated method stub
+    primaryHTable.setWriteBufferSize(writeBufferSize);
 
   }
 
   public <R extends Message> Map<byte[], R> batchCoprocessorService(
           MethodDescriptor methodDescriptor, Message request, byte[] startKey,
           byte[] endKey, R responsePrototype) throws ServiceException, Throwable {
-    // TODO Auto-generated method stub
-    return null;
+    return primaryHTable.batchCoprocessorService(methodDescriptor, request, startKey, endKey, responsePrototype);
   }
 
   public <R extends Message> void batchCoprocessorService(
           MethodDescriptor methodDescriptor, Message request, byte[] startKey,
           byte[] endKey, R responsePrototype, Callback<R> callback)
           throws ServiceException, Throwable {
-    // TODO Auto-generated method stub
+    primaryHTable.batchCoprocessorService(methodDescriptor, request, startKey, endKey, responsePrototype, callback);
 
   }
 

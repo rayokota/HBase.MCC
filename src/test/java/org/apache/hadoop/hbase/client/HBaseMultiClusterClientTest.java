@@ -65,6 +65,7 @@ public class HBaseMultiClusterClientTest {
       Configuration combinedConfig = HBaseMultiClusterConfigUtil.combineConfigurations(htu1.getConfiguration(),
               htu2.getConfiguration());
 
+      combinedConfig.setBoolean(ConfigConst.HBASE_FAILOVER_MODE_CONFIG, true);
       combinedConfig.setInt(ConfigConst.HBASE_WAIT_TIME_BEFORE_TRYING_PRIMARY_AFTER_FAILURE, 0);
 
       HConnection connection = HConnectionManagerMultiClusterWrapper.createConnection(combinedConfig);
